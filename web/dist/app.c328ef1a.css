@@ -1,6 +1,15 @@
 [v-cloak] {
     display: none;
 }
+
+/* Helper classes */
+.basil {
+    background-color: #FFFBE6 !important;
+}
+
+.basil--text {
+    color: #356859 !important;
+}
 @charset "UTF-8";
 /*!
 * Vuetify v2.3.4

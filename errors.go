@@ -33,11 +33,11 @@ func NewError(format string, a ...interface{}) error {
 
 func ErrCause(err error) error {
 	for true {
-		v := errors.Unwrap(err)
-		if v == nil {
+		parent := errors.Unwrap(err)
+		if parent == nil {
 			break
 		}
-		err = v
+		err = parent
 	}
 	return err
 }
@@ -48,6 +48,12 @@ func HTTPErrorHandler(e *echo.Echo) echo.HTTPErrorHandler {
 		causedErr := err
 
 		if causedErr == nil {
+			e.DefaultHTTPErrorHandler(err, c)
+			return
+		}
+
+		switch causedErr.(type) {
+		case *echo.HTTPError:
 			e.DefaultHTTPErrorHandler(err, c)
 			return
 		}
@@ -63,11 +69,13 @@ func HTTPErrorHandler(e *echo.Echo) echo.HTTPErrorHandler {
 				Code:    "validation_error",
 				Details: details,
 			})
+			return
 		default:
 			c.JSON(http.StatusInternalServerError, ErrorResponse{
 				Message: v.Error(),
 				Code:    "unexpected_error",
 			})
+			return
 		}
 	}
 }

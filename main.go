@@ -1,42 +1,48 @@
 package main
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"log"
 	"strconv"
 )
 
 func main() {
-	config, err := ParseConfigUsingEnv()
+	logger, err := NewLogger()
 	if err != nil {
-		log.Fatalf("reading config: %+v", err)
+		panic(fmt.Sprintf("creating logger: %+v", err))
 	}
-	log.Printf("loded config: %+v", config)
+
+	config, err := ReadConfigUsingEnv()
+	if err != nil {
+		logger.Fatal().Err(err).Msg("reading config")
+	}
+
+	logger.Debug().Interface("config", config).Msg("app initialization...")
 
 	codecStorage, err := NewInMemoryCodecStorage()
 	if err != nil {
-		log.Fatalf("creating local codec finder: %+v", err)
+		logger.Fatal().Err(err).Msg("creating local codec finder")
 	}
 
-	encoder, err := NewAvroEncoder(codecStorage)
+	encoder, err := NewAvroEncoder(codecStorage, logger.As("AVRO-ENCODER"))
 	if err != nil {
-		log.Fatalf("creating NATS avro encoder: %+v", err)
+		logger.Fatal().Err(err).Msg("creating NATS avro encoder")
 	}
 
-	natsClient, err := NewNATSClient(encoder, config.NATSServer)
+	natsClient, err := NewNATSClient(encoder, config.NATSServer, logger.As("NATS-CLIENT"))
 	if err != nil {
-		log.Fatalf("creating NATS client: %+v", err)
+		logger.Fatal().Err(err).Msg("creating NATS client")
 	}
 
 	messages := make(chan *PublishMessageRequest)
 
 	closeSubscription, err := natsClient.SubscribeAll(func(subject string, data interface{}) {
-		log.Printf("NATS message: %+v", data)
+		logger.Debug().Str("subject", subject).Interface("data", data).Msg("receive message")
 		//messages <- message
 	})
 	if err != nil {
-		log.Printf("subscribing to all events: %+v", err)
+		logger.Error().Err(err).Msg("subscribing to all events")
 	}
 
 	defer func() {
@@ -44,18 +50,18 @@ func main() {
 		natsClient.Drain()
 	}()
 
-	handlers := newAPIHandlers(natsClient, codecStorage)
+	handlers := newAPIHandlers(natsClient, codecStorage, logger)
 
 	e := echo.New()
 
-	e.Debug = true
 	e.Validator = NewValidator()
 	e.HTTPErrorHandler = HTTPErrorHandler(e)
 
-	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
+	e.Use(middleware.RequestID())
 	e.Use(middleware.BodyLimit("1M"))
+	//e.Use(RequestLogger(logger.As("http")))
 
 	e.Static("/", "./web/dist")
 
@@ -64,7 +70,9 @@ func main() {
 	e.POST("/api/message", handlers.CreateMessage)
 	e.GET("/api/stream", handlers.ReadStream(messages))
 
-	log.Printf("starting server at http://localhost:%d", config.Port)
+	logger.Debug().Msgf("starting server at http://localhost:%d", config.Port)
 
-	e.Logger.Fatal(e.Start(":" + strconv.Itoa(int(config.Port))))
+	if err := e.Start(":" + strconv.Itoa(int(config.Port))); err != nil {
+		logger.Fatal().Err(err).Msg("starting server")
+	}
 }

@@ -54744,7 +54744,7 @@ function patchScopedSlots (instance) {
   }
 }
 
-},{}],"App.vue":[function(require,module,exports) {
+},{}],"components/Publish.vue":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -54761,31 +54761,17 @@ var _stringify = _interopRequireDefault(require("@babel/runtime-corejs2/core-js/
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var _default = {
+  props: ['schemas'],
   data: function data() {
     return {
-      schemas: [],
-      messages: [],
-      alerts: [],
       form: {
         type: null,
         payload: '',
         subject: ''
-      },
-      schemasFile: null
+      }
     };
   },
   computed: {
-    isPayloadValid: function isPayloadValid() {
-      try {
-        JSON.parse(this.form.payload);
-        return true;
-      } catch (e) {
-        return false;
-      }
-    },
-    formValid: function formValid() {
-      return this.isPayloadValid && this.form.subject.length > 0;
-    },
     payloadExample: function payloadExample() {
       var _this = this;
 
@@ -54799,40 +54785,21 @@ var _default = {
 
       return (0, _stringify.default)(example, null, 2);
     },
-    // last 5
-    lastMessages: function lastMessages() {
-      return this.messages.reverse(); // return this.messages.slice(this.messages.length - 5, this.messages.length).reverse();
-    },
-    lastAlerts: function lastAlerts() {
-      var max = 3;
-      var alerts = this.alerts.slice();
-      var len = alerts.length;
-
-      if (len <= 3) {
-        return alerts;
+    isPayloadValid: function isPayloadValid() {
+      try {
+        JSON.parse(this.form.payload);
+        return true;
+      } catch (e) {
+        return false;
       }
-
-      return alerts.slice(len - max, len).reverse();
+    },
+    formValid: function formValid() {
+      return this.isPayloadValid && this.form.subject.length > 0;
     }
   },
-  created: function created() {
-    var _this2 = this;
-
-    this.loadSchemas();
-    this.$backend.connectMessagesStream(function (message) {
-      _this2.messages.push(message);
-    });
-  },
   methods: {
-    loadSchemas: function loadSchemas() {
-      var _this3 = this;
-
-      this.$backend.fetchSchemas().then(function (res) {
-        _this3.schemas = res;
-      });
-    },
     processForm: function processForm() {
-      var _this4 = this;
+      var _this2 = this;
 
       return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee() {
         var payload, res;
@@ -54841,94 +54808,43 @@ var _default = {
             switch (_context.prev = _context.next) {
               case 0:
                 _context.prev = 0;
-                payload = JSON.parse(_this4.form.payload);
-                _context.next = 8;
+                payload = JSON.parse(_this2.form.payload);
+                _context.next = 7;
                 break;
 
               case 4:
                 _context.prev = 4;
                 _context.t0 = _context["catch"](0);
-                _this4.error = 'invalid JSON';
                 return _context.abrupt("return");
 
-              case 8:
-                _context.prev = 8;
-                _context.next = 11;
-                return _this4.$backend.publishMessage({
-                  subject: _this4.form.subject,
+              case 7:
+                _context.prev = 7;
+                _context.next = 10;
+                return _this2.$backend.publishMessage({
+                  subject: _this2.form.subject,
                   payload: payload
                 });
 
-              case 11:
+              case 10:
                 res = _context.sent;
 
-                _this4.showNotification(res.message);
+                _this2.$emit('success', res.message);
 
-                _context.next = 18;
+                _context.next = 17;
                 break;
 
-              case 15:
-                _context.prev = 15;
-                _context.t1 = _context["catch"](8);
+              case 14:
+                _context.prev = 14;
+                _context.t1 = _context["catch"](7);
 
-                _this4.showError(_context.t1.message);
+                _this2.$emit('error', _context.t1.message);
 
-              case 18:
+              case 17:
               case "end":
                 return _context.stop();
             }
           }
-        }, _callee, null, [[0, 4], [8, 15]]);
-      }))();
-    },
-    showError: function showError(text) {
-      this.alerts.push({
-        type: 'error',
-        text: text
-      });
-    },
-    showNotification: function showNotification(text) {
-      this.alerts.push({
-        type: 'success',
-        text: text
-      });
-    },
-    uploadSchemas: function uploadSchemas() {
-      var _this5 = this;
-
-      return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee2() {
-        var res;
-        return _regenerator.default.wrap(function _callee2$(_context2) {
-          while (1) {
-            switch (_context2.prev = _context2.next) {
-              case 0:
-                _context2.prev = 0;
-                _context2.next = 3;
-                return _this5.$backend.uploadSchema(_this5.schemasFile);
-
-              case 3:
-                res = _context2.sent;
-                _this5.schemasFile = null;
-
-                _this5.loadSchemas();
-
-                _this5.showNotification(res.message);
-
-                _context2.next = 12;
-                break;
-
-              case 9:
-                _context2.prev = 9;
-                _context2.t0 = _context2["catch"](0);
-
-                _this5.showError(_context2.t0.message);
-
-              case 12:
-              case "end":
-                return _context2.stop();
-            }
-          }
-        }, _callee2, null, [[0, 9]]);
+        }, _callee, null, [[0, 4], [7, 14]]);
       }))();
     }
   },
@@ -54946,6 +54862,472 @@ var _default = {
         });
         this.form.subject = schema ? schema.namespace : '';
       }
+    }
+  }
+};
+exports.default = _default;
+        var $51af8e = exports.default || module.exports;
+      
+      if (typeof $51af8e === 'function') {
+        $51af8e = $51af8e.options;
+      }
+    
+        /* template */
+        Object.assign($51af8e, (function () {
+          var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    [
+      _c(
+        "v-form",
+        {
+          on: {
+            submit: function($event) {
+              $event.preventDefault()
+              return _vm.processForm($event)
+            }
+          }
+        },
+        [
+          _c("v-autocomplete", {
+            attrs: {
+              items: _vm.schemas,
+              "item-text": "namespace",
+              "item-value": "name",
+              dense: "",
+              filled: "",
+              label: "Subject",
+              "no-data-text": "No schemas found"
+            },
+            model: {
+              value: _vm.form.type,
+              callback: function($$v) {
+                _vm.$set(_vm.form, "type", $$v)
+              },
+              expression: "form.type"
+            }
+          }),
+          _vm._v(" "),
+          _c("v-textarea", {
+            attrs: {
+              outlined: "",
+              label: "Payload",
+              value: _vm.form.payload,
+              "auto-grow": true
+            },
+            model: {
+              value: _vm.form.payload,
+              callback: function($$v) {
+                _vm.$set(_vm.form, "payload", $$v)
+              },
+              expression: "form.payload"
+            }
+          }),
+          _vm._v(" "),
+          _c(
+            "v-btn",
+            {
+              staticClass: "mr-4",
+              attrs: {
+                type: "submit",
+                disabled: !_vm.formValid,
+                color: "success"
+              }
+            },
+            [_vm._v("Publish message\n        ")]
+          )
+        ],
+        1
+      )
+    ],
+    1
+  )
+}
+var staticRenderFns = []
+render._withStripped = true
+
+          return {
+            render: render,
+            staticRenderFns: staticRenderFns,
+            _compiled: true,
+            _scopeId: "data-v-51af8e",
+            functional: undefined
+          };
+        })());
+      
+    /* hot reload */
+    (function () {
+      if (module.hot) {
+        var api = require('vue-hot-reload-api');
+        api.install(require('vue'));
+        if (api.compatible) {
+          module.hot.accept();
+          if (!module.hot.data) {
+            api.createRecord('$51af8e', $51af8e);
+          } else {
+            api.reload('$51af8e', $51af8e);
+          }
+        }
+
+        
+        var reloadCSS = require('_css_loader');
+        module.hot.dispose(reloadCSS);
+        module.hot.accept(reloadCSS);
+      
+      }
+    })();
+},{"@babel/runtime-corejs2/regenerator":"node_modules/@babel/runtime-corejs2/regenerator/index.js","@babel/runtime-corejs2/helpers/asyncToGenerator":"node_modules/@babel/runtime-corejs2/helpers/asyncToGenerator.js","@babel/runtime-corejs2/core-js/json/stringify":"node_modules/@babel/runtime-corejs2/core-js/json/stringify.js","_css_loader":"node_modules/parcel/src/builtins/css-loader.js","vue-hot-reload-api":"node_modules/vue-hot-reload-api/dist/index.js","vue":"node_modules/vue/dist/vue.runtime.esm.js"}],"components/Subscribe.vue":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  props: ['events'],
+  data: function data() {
+    return {
+      list: []
+    };
+  },
+  watch: {
+    events: function events(val) {
+      this.list = val;
+    }
+  }
+};
+exports.default = _default;
+        var $f2ead0 = exports.default || module.exports;
+      
+      if (typeof $f2ead0 === 'function') {
+        $f2ead0 = $f2ead0.options;
+      }
+    
+        /* template */
+        Object.assign($f2ead0, (function () {
+          var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    [
+      _c("v-simple-table", {
+        attrs: { dense: "" },
+        scopedSlots: _vm._u([
+          {
+            key: "default",
+            fn: function() {
+              return [
+                _c("thead", [
+                  _c("tr", [
+                    _c("th", { staticClass: "text-left" }, [_vm._v("ID")]),
+                    _vm._v(" "),
+                    _c("th", { staticClass: "text-left" }, [_vm._v("Subject")]),
+                    _vm._v(" "),
+                    _c("th", { staticClass: "text-left" }, [_vm._v("Payload")])
+                  ])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "tbody",
+                  _vm._l(_vm.list, function(item) {
+                    return _c("tr", { key: item.name }, [
+                      _c("td", { staticClass: "text-left" }, [
+                        _vm._v(_vm._s(item.id))
+                      ]),
+                      _vm._v(" "),
+                      _c("td", { staticClass: "text-left" }, [
+                        _vm._v(_vm._s(item.subject))
+                      ]),
+                      _vm._v(" "),
+                      _c("td", { staticClass: "text-left" }, [
+                        _vm._v(_vm._s(item.payload))
+                      ])
+                    ])
+                  }),
+                  0
+                )
+              ]
+            },
+            proxy: true
+          }
+        ])
+      })
+    ],
+    1
+  )
+}
+var staticRenderFns = []
+render._withStripped = true
+
+          return {
+            render: render,
+            staticRenderFns: staticRenderFns,
+            _compiled: true,
+            _scopeId: null,
+            functional: undefined
+          };
+        })());
+      
+    /* hot reload */
+    (function () {
+      if (module.hot) {
+        var api = require('vue-hot-reload-api');
+        api.install(require('vue'));
+        if (api.compatible) {
+          module.hot.accept();
+          if (!module.hot.data) {
+            api.createRecord('$f2ead0', $f2ead0);
+          } else {
+            api.reload('$f2ead0', $f2ead0);
+          }
+        }
+
+        
+      }
+    })();
+},{"vue-hot-reload-api":"node_modules/vue-hot-reload-api/dist/index.js","vue":"node_modules/vue/dist/vue.runtime.esm.js"}],"components/UploadSchemas.vue":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _regenerator = _interopRequireDefault(require("@babel/runtime-corejs2/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime-corejs2/helpers/asyncToGenerator"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = {
+  data: function data() {
+    return {
+      schemasFile: null
+    };
+  },
+  methods: {
+    uploadSchemas: function uploadSchemas() {
+      var _this = this;
+
+      return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee() {
+        var res;
+        return _regenerator.default.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                _context.prev = 0;
+                _context.next = 3;
+                return _this.$backend.uploadSchema(_this.schemasFile);
+
+              case 3:
+                res = _context.sent;
+                _this.schemasFile = null;
+
+                _this.$emit('success', res.message);
+
+                _context.next = 11;
+                break;
+
+              case 8:
+                _context.prev = 8;
+                _context.t0 = _context["catch"](0);
+
+                _this.$emit('error', _context.t0.message);
+
+              case 11:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee, null, [[0, 8]]);
+      }))();
+    }
+  }
+};
+exports.default = _default;
+        var $3ed11c = exports.default || module.exports;
+      
+      if (typeof $3ed11c === 'function') {
+        $3ed11c = $3ed11c.options;
+      }
+    
+        /* template */
+        Object.assign($3ed11c, (function () {
+          var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    [
+      _c(
+        "v-form",
+        {
+          on: {
+            submit: function($event) {
+              $event.preventDefault()
+              return _vm.uploadSchemas($event)
+            }
+          }
+        },
+        [
+          _c("v-file-input", {
+            attrs: { label: "Schemas zip file", outlined: "", dense: "" },
+            model: {
+              value: _vm.schemasFile,
+              callback: function($$v) {
+                _vm.schemasFile = $$v
+              },
+              expression: "schemasFile"
+            }
+          }),
+          _vm._v(" "),
+          _c(
+            "v-btn",
+            {
+              staticClass: "mr-4",
+              attrs: {
+                type: "submit",
+                disabled: _vm.schemasFile == null,
+                clearable: "",
+                color: "success"
+              }
+            },
+            [_vm._v("\n                Upload\n            ")]
+          )
+        ],
+        1
+      )
+    ],
+    1
+  )
+}
+var staticRenderFns = []
+render._withStripped = true
+
+          return {
+            render: render,
+            staticRenderFns: staticRenderFns,
+            _compiled: true,
+            _scopeId: "data-v-3ed11c",
+            functional: undefined
+          };
+        })());
+      
+    /* hot reload */
+    (function () {
+      if (module.hot) {
+        var api = require('vue-hot-reload-api');
+        api.install(require('vue'));
+        if (api.compatible) {
+          module.hot.accept();
+          if (!module.hot.data) {
+            api.createRecord('$3ed11c', $3ed11c);
+          } else {
+            api.reload('$3ed11c', $3ed11c);
+          }
+        }
+
+        
+        var reloadCSS = require('_css_loader');
+        module.hot.dispose(reloadCSS);
+        module.hot.accept(reloadCSS);
+      
+      }
+    })();
+},{"@babel/runtime-corejs2/regenerator":"node_modules/@babel/runtime-corejs2/regenerator/index.js","@babel/runtime-corejs2/helpers/asyncToGenerator":"node_modules/@babel/runtime-corejs2/helpers/asyncToGenerator.js","_css_loader":"node_modules/parcel/src/builtins/css-loader.js","vue-hot-reload-api":"node_modules/vue-hot-reload-api/dist/index.js","vue":"node_modules/vue/dist/vue.runtime.esm.js"}],"App.vue":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _Publish = _interopRequireDefault(require("./components/Publish"));
+
+var _Subscribe = _interopRequireDefault(require("./components/Subscribe"));
+
+var _UploadSchemas = _interopRequireDefault(require("./components/UploadSchemas"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _default = {
+  components: {
+    Publish: _Publish.default,
+    Subscribe: _Subscribe.default,
+    UploadSchemas: _UploadSchemas.default
+  },
+  data: function data() {
+    return {
+      tab: null,
+      items: ['Appetizers', 'Entrees', 'Deserts', 'Cocktails'],
+      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+      schemas: [],
+      messages: [],
+      alerts: []
+    };
+  },
+  computed: {
+    lastMessages: function lastMessages() {
+      return this.messages.reverse();
+    },
+    lastAlerts: function lastAlerts() {
+      var max = 3;
+      var alerts = this.alerts.slice();
+      var len = alerts.length;
+
+      if (len <= 3) {
+        return alerts;
+      }
+
+      return alerts.slice(len - max, len).reverse();
+    },
+    messagesCount: function messagesCount() {
+      return this.lastMessages.length.toString();
+    }
+  },
+  created: function created() {
+    var _this = this;
+
+    this.loadSchemas();
+    this.$backend.connectMessagesStream(function (message) {
+      _this.messages.push(message);
+    });
+  },
+  methods: {
+    loadSchemas: function loadSchemas() {
+      var _this2 = this;
+
+      this.$backend.fetchSchemas().then(function (res) {
+        _this2.schemas = res;
+      });
+    },
+    showError: function showError(text) {
+      this.alerts.push({
+        type: 'error',
+        text: text
+      });
+    },
+    showNotification: function showNotification(text) {
+      this.alerts.push({
+        type: 'success',
+        text: text
+      });
+    },
+    onSuccess: function onSuccess(message) {
+      this.showNotification(message);
+    },
+    onError: function onError(message) {
+      this.showError(message);
+    },
+    onUploadedSchemasSuccess: function onUploadedSchemasSuccess(message) {
+      this.showNotification(message);
+      this.loadSchemas();
     }
   }
 };
@@ -54980,75 +55362,75 @@ exports.default = _default;
             { attrs: { fluid: "" } },
             [
               _c(
-                "v-row",
+                "v-tabs",
+                {
+                  attrs: {
+                    color: "basil",
+                    grow: "",
+                    dark: "",
+                    "background-color": "primary"
+                  },
+                  model: {
+                    value: _vm.tab,
+                    callback: function($$v) {
+                      _vm.tab = $$v
+                    },
+                    expression: "tab"
+                  }
+                },
+                [
+                  _c("v-tab", [_vm._v("Publish")]),
+                  _vm._v(" "),
+                  _c(
+                    "v-tab",
+                    [
+                      _c(
+                        "v-badge",
+                        {
+                          attrs: { color: "green", content: _vm.messagesCount }
+                        },
+                        [_vm._v("Subscribe")]
+                      )
+                    ],
+                    1
+                  ),
+                  _vm._v(" "),
+                  _c("v-tab", [_vm._v("Manage schemas")])
+                ],
+                1
+              ),
+              _vm._v(" "),
+              _c(
+                "v-tabs-items",
+                {
+                  model: {
+                    value: _vm.tab,
+                    callback: function($$v) {
+                      _vm.tab = $$v
+                    },
+                    expression: "tab"
+                  }
+                },
                 [
                   _c(
-                    "v-col",
+                    "v-tab-item",
                     [
-                      _c("h1", [_vm._v("Publish")]),
-                      _vm._v(" "),
                       _c(
-                        "v-form",
-                        {
-                          on: {
-                            submit: function($event) {
-                              $event.preventDefault()
-                              return _vm.processForm($event)
-                            }
-                          }
-                        },
+                        "v-card",
+                        { attrs: { flat: "" } },
                         [
-                          _c("v-autocomplete", {
-                            attrs: {
-                              items: _vm.schemas,
-                              "item-text": "namespace",
-                              "item-value": "name",
-                              dense: "",
-                              filled: "",
-                              label: "Subject",
-                              "no-data-text":
-                                "No schemas found. Upload them first..."
-                            },
-                            model: {
-                              value: _vm.form.type,
-                              callback: function($$v) {
-                                _vm.$set(_vm.form, "type", $$v)
-                              },
-                              expression: "form.type"
-                            }
-                          }),
-                          _vm._v(" "),
-                          _c("v-textarea", {
-                            attrs: {
-                              outlined: "",
-                              label: "Payload",
-                              value: _vm.form.payload,
-                              "auto-grow": true
-                            },
-                            model: {
-                              value: _vm.form.payload,
-                              callback: function($$v) {
-                                _vm.$set(_vm.form, "payload", $$v)
-                              },
-                              expression: "form.payload"
-                            }
-                          }),
-                          _vm._v(" "),
                           _c(
-                            "v-btn",
-                            {
-                              staticClass: "mr-4",
-                              attrs: {
-                                type: "submit",
-                                disabled: !_vm.formValid,
-                                color: "success"
-                              }
-                            },
+                            "v-card-text",
                             [
-                              _vm._v(
-                                "Publish message\n                        "
-                              )
-                            ]
+                              _c("Publish", {
+                                attrs: { schemas: _vm.schemas },
+                                on: {
+                                  success: _vm.onSuccess,
+                                  error: _vm.onError
+                                }
+                              })
+                            ],
+                            1
                           )
                         ],
                         1
@@ -55058,111 +55440,46 @@ exports.default = _default;
                   ),
                   _vm._v(" "),
                   _c(
-                    "v-col",
+                    "v-tab-item",
                     [
-                      _c("h1", [_vm._v("Subscribe")]),
-                      _vm._v(" "),
-                      _c("v-simple-table", {
-                        attrs: { dense: "" },
-                        scopedSlots: _vm._u([
-                          {
-                            key: "default",
-                            fn: function() {
-                              return [
-                                _c("thead", [
-                                  _c("tr", [
-                                    _c("th", { staticClass: "text-left" }, [
-                                      _vm._v("ID")
-                                    ]),
-                                    _vm._v(" "),
-                                    _c("th", { staticClass: "text-left" }, [
-                                      _vm._v("Subject")
-                                    ]),
-                                    _vm._v(" "),
-                                    _c("th", { staticClass: "text-left" }, [
-                                      _vm._v("Payload")
-                                    ])
-                                  ])
-                                ]),
-                                _vm._v(" "),
-                                _c(
-                                  "tbody",
-                                  _vm._l(_vm.lastMessages, function(item) {
-                                    return _c("tr", { key: item.name }, [
-                                      _c("td", { staticClass: "text-left" }, [
-                                        _vm._v(_vm._s(item.id))
-                                      ]),
-                                      _vm._v(" "),
-                                      _c("td", { staticClass: "text-left" }, [
-                                        _vm._v(_vm._s(item.subject))
-                                      ]),
-                                      _vm._v(" "),
-                                      _c("td", { staticClass: "text-left" }, [
-                                        _vm._v(_vm._s(item.payload))
-                                      ])
-                                    ])
-                                  }),
-                                  0
-                                )
-                              ]
-                            },
-                            proxy: true
-                          }
-                        ])
-                      })
+                      _c(
+                        "v-card",
+                        { attrs: { flat: "" } },
+                        [
+                          _c(
+                            "v-card-text",
+                            [
+                              _c("Subscribe", {
+                                attrs: { events: _vm.lastMessages }
+                              })
+                            ],
+                            1
+                          )
+                        ],
+                        1
+                      )
                     ],
                     1
-                  )
-                ],
-                1
-              ),
-              _vm._v(" "),
-              _c(
-                "v-row",
-                [
+                  ),
+                  _vm._v(" "),
                   _c(
-                    "v-col",
+                    "v-tab-item",
                     [
-                      _c("h1", [_vm._v("Upload schemas")]),
-                      _vm._v(" "),
                       _c(
-                        "v-form",
-                        {
-                          on: {
-                            submit: function($event) {
-                              $event.preventDefault()
-                              return _vm.uploadSchemas($event)
-                            }
-                          }
-                        },
+                        "v-card",
+                        { attrs: { flat: "" } },
                         [
-                          _c("v-file-input", {
-                            attrs: {
-                              label: "Schemas zip file",
-                              outlined: "",
-                              dense: ""
-                            },
-                            model: {
-                              value: _vm.schemasFile,
-                              callback: function($$v) {
-                                _vm.schemasFile = $$v
-                              },
-                              expression: "schemasFile"
-                            }
-                          }),
-                          _vm._v(" "),
                           _c(
-                            "v-btn",
-                            {
-                              staticClass: "mr-4",
-                              attrs: {
-                                type: "submit",
-                                disabled: _vm.schemasFile == null,
-                                clearable: "",
-                                color: "success"
-                              }
-                            },
-                            [_vm._v("Upload")]
+                            "v-card-text",
+                            [
+                              _c("UploadSchemas", {
+                                on: {
+                                  success: _vm.onUploadedSchemasSuccess,
+                                  error: _vm.onError
+                                }
+                              })
+                            ],
+                            1
                           )
                         ],
                         1
@@ -55185,9 +55502,15 @@ exports.default = _default;
                       type: item.type
                     }
                   },
-                  [_vm._v(_vm._s(item.text))]
+                  [_vm._v(_vm._s(item.text) + "\n            ")]
                 )
-              })
+              }),
+              _vm._v(" "),
+              _c("v-row", [_c("v-col")], 1),
+              _vm._v(" "),
+              _c("v-row", [_c("v-col")], 1),
+              _vm._v(" "),
+              _c("v-row", [_c("v-col")], 1)
             ],
             2
           )
@@ -55231,7 +55554,7 @@ render._withStripped = true
       
       }
     })();
-},{"@babel/runtime-corejs2/regenerator":"node_modules/@babel/runtime-corejs2/regenerator/index.js","@babel/runtime-corejs2/helpers/asyncToGenerator":"node_modules/@babel/runtime-corejs2/helpers/asyncToGenerator.js","@babel/runtime-corejs2/core-js/json/stringify":"node_modules/@babel/runtime-corejs2/core-js/json/stringify.js","_css_loader":"node_modules/parcel/src/builtins/css-loader.js","vue-hot-reload-api":"node_modules/vue-hot-reload-api/dist/index.js","vue":"node_modules/vue/dist/vue.runtime.esm.js"}],"node_modules/vuetify/dist/vuetify.min.css":[function(require,module,exports) {
+},{"./components/Publish":"components/Publish.vue","./components/Subscribe":"components/Subscribe.vue","./components/UploadSchemas":"components/UploadSchemas.vue","_css_loader":"node_modules/parcel/src/builtins/css-loader.js","vue-hot-reload-api":"node_modules/vue-hot-reload-api/dist/index.js","vue":"node_modules/vue/dist/vue.runtime.esm.js"}],"node_modules/vuetify/dist/vuetify.min.css":[function(require,module,exports) {
 
         var reloadCSS = require('_css_loader');
         module.hot.dispose(reloadCSS);
@@ -55498,7 +55821,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 _vue.default.use(_vuetify.default);
 
 var vuetify = new _vuetify.default({});
-_vue.default.prototype.$backend = new _backend.default('http://localhost:8999');
+_vue.default.prototype.$backend = new _backend.default(window.location.origin);
 new _vue.default({
   vuetify: vuetify,
   render: function render(createElement) {
@@ -55533,7 +55856,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "46425" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "45283" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

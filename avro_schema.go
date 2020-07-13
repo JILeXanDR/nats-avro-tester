@@ -1,10 +1,5 @@
 package main
 
-type schemaItem struct {
-	Schema  map[string]interface{}
-	Content string
-}
-
 func GenerateAvroJSONExample(schema map[string]interface{}) map[string]interface{} {
 	example := make(map[string]interface{})
 	fields, ok := schema["fields"].([]interface{})

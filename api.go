@@ -7,19 +7,20 @@ import (
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
 type apiHandlers struct {
 	nats        *natsClient
 	codecFinder CodecStorage
+	logger      *Logger
 }
 
-func newAPIHandlers(nats *natsClient, codecFinder CodecStorage) *apiHandlers {
+func newAPIHandlers(nats *natsClient, codecFinder CodecStorage, logger *Logger) *apiHandlers {
 	return &apiHandlers{
 		nats:        nats,
 		codecFinder: codecFinder,
+		logger:      logger,
 	}
 }
 
@@ -84,8 +85,7 @@ func (a *apiHandlers) UploadSchema(c echo.Context) error {
 		}
 		b, err := ioutil.ReadAll(f)
 		if err != nil {
-			err = WrapError(err, "reading file %s", file.Name)
-			log.Printf("err: %+v", err)
+			a.logger.Err(err).Str("file", file.Name).Msg("reading file's content")
 			continue
 		}
 		schemas = append(schemas, string(b))
@@ -139,7 +139,7 @@ func (a *apiHandlers) ReadStream(messages chan *PublishMessageRequest) echo.Hand
 			//msg.ID = time.Now().UTC().String()
 			b, err := json.Marshal(msg)
 			if err != nil {
-				log.Printf("marshaling msg struct into JSON: %+v", err)
+				a.logger.Err(err).Interface("data", msg).Msgf("marshaling data to JSON")
 				continue
 			}
 			fmt.Fprintf(rw, "data: %s\n\n", string(b))

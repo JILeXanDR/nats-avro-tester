@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/karrick/goavro"
 	"io/ioutil"
 	"os"
@@ -20,7 +19,7 @@ func NewLocalCodecStorage(dir string) (CodecStorage, error) {
 
 	schemas, err := lcf.readAllAvroSchemas(dir)
 	if err != nil {
-		return nil, fmt.Errorf("reading all avro schemas: %w", err)
+		return nil, WrapError(err, "reading all avro schemas")
 	}
 
 	codecs := make(map[string]*CodecWrapper)
@@ -42,7 +41,7 @@ func NewLocalCodecStorage(dir string) (CodecStorage, error) {
 		}
 		codec, err := goavro.NewCodec(string(content))
 		if err != nil {
-			return nil, fmt.Errorf("creating new codec from avro schema: %w", err)
+			return nil, WrapError(err, "creating new codec from avro schema")
 		}
 		codecs[namespace] = &CodecWrapper{
 			Codec:     codec,

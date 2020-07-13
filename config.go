@@ -20,7 +20,7 @@ func ReadConfigUsingFlags() (*Config, error) {
 	return &cfg, nil
 }
 
-func ParseConfigUsingEnv() (*Config, error) {
+func ReadConfigUsingEnv() (*Config, error) {
 	cfg := Config{
 		Port:       8080,
 		NATSServer: "http://localhost:4222",

@@ -41,6 +41,5 @@ COPY --from=builder2 /app/dist ./web/dist
 # Expose port 8080 to the outside world
 EXPOSE 8080
 
-# pass env vars???
 # Command to run the executable
 CMD [ "./main" ]

@@ -6,14 +6,11 @@ import (
 )
 
 type natsClient struct {
-	conn *nats.EncodedConn
+	conn   *nats.EncodedConn
+	logger *Logger
 }
 
-func (c *natsClient) Drain() error {
-	return c.conn.Drain()
-}
-
-func NewNATSClient(encoder nats.Encoder, server string) (*natsClient, error) {
+func NewNATSClient(encoder nats.Encoder, server string, logger *Logger) (*natsClient, error) {
 	conn, err := nats.Connect(server)
 	if err != nil {
 		return nil, WrapError(err, "connecting NATS server")
@@ -26,10 +23,15 @@ func NewNATSClient(encoder nats.Encoder, server string) (*natsClient, error) {
 		return nil, WrapError(err, "creating encoded connection")
 	}
 
-	return &natsClient{conn: ec}, nil
+	return &natsClient{conn: ec, logger: logger}, nil
+}
+
+func (c *natsClient) Drain() error {
+	return c.conn.Drain()
 }
 
 func (c *natsClient) Publish(ctx context.Context, subject string, message interface{}) error {
+	c.logger.Debug().Str("subject", subject).Interface("data", message).Msg(`publish data`)
 	err := c.conn.Publish(subject, message)
 	if err != nil {
 		return WrapError(err, "publishing message to NATS connection")
@@ -38,12 +40,13 @@ func (c *natsClient) Publish(ctx context.Context, subject string, message interf
 }
 
 func (c *natsClient) SubscribeAll(next func(string, interface{})) (func(), error) {
-	subscription, err := c.conn.Subscribe("*", func(data map[string]interface{}) {
-		println("xxx")
+	subject := "*"
+	subscription, err := c.conn.Subscribe(subject, func(data map[string]interface{}) {
+		c.logger.Debug().Str("subject", subject).Interface("data", data).Msg("got data from subscriber")
 		//next(m.Subject, m.Data)
 	})
 	if err != nil {
-		return nil, WrapError(err, "queue subsribing")
+		return nil, WrapError(err, "subscribing to subject %s", subject)
 	}
 	closeFn := func() {
 		subscription.Unsubscribe()
