@@ -1,0 +1,15 @@
+version: "3"
+services:
+  app:
+    image: jilexandr/natsavrotester:latest
+    environment:
+      PORT: 8080
+      NATS_SERVER: "http://nats:4222"
+    ports:
+      - 9999:8080
+    links:
+      - nats
+  nats:
+    image: nats:2.1
+    ports:
+      - 4222
