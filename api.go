@@ -14,13 +14,15 @@ type apiHandlers struct {
 	nats        *natsClient
 	codecFinder CodecStorage
 	logger      *Logger
+	hub         SSEHub
 }
 
-func newAPIHandlers(nats *natsClient, codecFinder CodecStorage, logger *Logger) *apiHandlers {
+func newAPIHandlers(nats *natsClient, codecFinder CodecStorage, logger *Logger, hub SSEHub) *apiHandlers {
 	return &apiHandlers{
 		nats:        nats,
 		codecFinder: codecFinder,
 		logger:      logger,
+		hub:         hub,
 	}
 }
 
@@ -119,31 +121,34 @@ func (a *apiHandlers) CreateMessage(c echo.Context) error {
 	return c.JSON(http.StatusOK, echo.Map{"message": "ok"})
 }
 
-func (a *apiHandlers) ReadStream(messages chan *PublishMessageRequest) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		c.Response().Header().Set(echo.HeaderContentType, "text/event-stream")
-		c.Response().Header().Set("Content-Type", "text/event-stream")
-		c.Response().Header().Set("Cache-Control", "no-cache")
-		c.Response().Header().Set("Connection", "keep-alive")
-		c.Response().WriteHeader(http.StatusOK)
+func (a *apiHandlers) WriteMessagesStream(c echo.Context) error {
+	client := NewSSEClient()
+	a.hub.Register(client)
+	go func() {
+		<-c.Request().Context().Done()
+		a.hub.Unregister(client)
+	}()
 
-		rw := c.Response().Writer
+	c.Response().Header().Set(echo.HeaderContentType, "text/event-stream")
+	c.Response().Header().Set("Content-Type", "text/event-stream")
+	c.Response().Header().Set("Cache-Control", "no-cache")
+	c.Response().Header().Set("Connection", "keep-alive")
+	c.Response().WriteHeader(http.StatusOK)
 
-		flusher, ok := rw.(http.Flusher)
-		if !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, "Streaming unsupported!")
-		}
+	rw := c.Response().Writer
 
-		for {
-			msg := <-messages
-			//msg.ID = time.Now().UTC().String()
-			b, err := json.Marshal(msg)
-			if err != nil {
-				a.logger.Err(err).Interface("data", msg).Msgf("marshaling data to JSON")
-				continue
-			}
+	flusher, ok := rw.(http.Flusher)
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Streaming unsupported!")
+	}
+
+	return client.Wait(func(msg interface{}) {
+		b, err := json.Marshal(msg)
+		if err != nil {
+			a.logger.Err(err).Interface("data", msg).Msgf("marshaling data to JSON")
+		} else {
 			fmt.Fprintf(rw, "data: %s\n\n", string(b))
 			flusher.Flush()
 		}
-	}
+	})
 }

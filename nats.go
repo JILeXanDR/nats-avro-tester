@@ -39,17 +39,13 @@ func (c *natsClient) Publish(ctx context.Context, subject string, message interf
 	return nil
 }
 
-func (c *natsClient) SubscribeAll(next func(string, interface{})) (func(), error) {
-	subject := "*"
-	subscription, err := c.conn.Subscribe(subject, func(data map[string]interface{}) {
-		c.logger.Debug().Str("subject", subject).Interface("data", data).Msg("got data from subscriber")
-		//next(m.Subject, m.Data)
+func (c *natsClient) SubscribeAll(next func(string, interface{})) error {
+	_, err := c.conn.QueueSubscribe("*", "*", func(subject string, vPrt interface{}) {
+		c.logger.Debug().Str("subject", subject).Interface("data", vPrt).Msg("got decoded from subscriber")
+		next(subject, vPrt)
 	})
 	if err != nil {
-		return nil, WrapError(err, "subscribing to subject %s", subject)
+		return WrapError(err, "subscribing to subject %s", "*")
 	}
-	closeFn := func() {
-		subscription.Unsubscribe()
-	}
-	return closeFn, nil
+	return nil
 }

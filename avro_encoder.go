@@ -47,7 +47,7 @@ func (enc *avroEncoder) encode(subject string, v interface{}) ([]byte, error) {
 func (enc *avroEncoder) Decode(subject string, data []byte, vPtr interface{}) error {
 	err := enc.decode(subject, data, vPtr)
 	if err != nil {
-		enc.logger.Err(err).Msg("decoding")
+		enc.logger.Err(err).Msg("failed to decode NATS data")
 	} else {
 		enc.logger.Debug().Interface("val", vPtr).Msg("decoded message")
 	}
@@ -61,18 +61,25 @@ func (enc *avroEncoder) decode(subject string, data []byte, vPtr interface{}) er
 		return WrapError(err, `finding codec by subject "%s"`, subject)
 	}
 	if codec == nil {
-		return NewError(`codec for subject "%s" not found`, subject)
+		i, _ := vPtr.(*interface{})
+		*i = string(data)
+		enc.logger.Warn().Str("subject", subject).Msg("codec for subject not found")
+		return nil
+		//return NewError(`codec for subject "%s" not found`, subject)
 	}
 
 	native, _, err := codec.NativeFromBinary(data)
 	if err != nil {
 		// not avro message
-		vPtr = data
-		return WrapError(err, "not avro message")
+		i, _ := vPtr.(*interface{})
+		*i = string(data)
+		enc.logger.Warn().Str("subject", subject).Bytes("bytes", data).Msg("not avro message")
+		//return WrapError(err, "not avro message")
+	} else {
+		// avro message
+		i, _ := vPtr.(*interface{})
+		*i = native.(map[string]interface{})
 	}
-
-	// avro message
-	vPtr = native.(map[string]interface{})
 
 	return nil
 }

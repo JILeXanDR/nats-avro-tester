@@ -2,14 +2,7 @@
     export default {
         props: ['events'],
         data() {
-            return {
-                list: [],
-            };
-        },
-        watch: {
-            events(val) {
-                this.list = val;
-            },
+            return {};
         },
     }
 </script>
@@ -20,16 +13,16 @@
             <template v-slot:default>
                 <thead>
                 <tr>
-                    <th class="text-left">ID</th>
                     <th class="text-left">Subject</th>
                     <th class="text-left">Payload</th>
+                    <th class="text-left">When</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="item in list" :key="item.name">
-                    <td class="text-left">{{ item.id }}</td>
+                <tr v-for="item in events" :key="item.name">
                     <td class="text-left">{{ item.subject }}</td>
                     <td class="text-left">{{ item.payload }}</td>
+                    <td class="text-left">{{ item.when }}</td>
                 </tr>
                 </tbody>
             </template>

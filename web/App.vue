@@ -8,30 +8,30 @@
         data() {
             return {
                 tab: null,
-                items: [
-                    'Appetizers', 'Entrees', 'Deserts', 'Cocktails',
-                ],
-                text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
                 schemas: [],
                 messages: [],
                 alerts: [],
+                readMessagesCount: 0,
+                snackbar: {
+                    model: false,
+                    timeout: 5000,
+                    color: 'info',
+                    text: '',
+                },
             };
         },
         computed: {
             lastMessages() {
-                return this.messages.reverse();
-            },
-            lastAlerts() {
-                const max = 3;
-                const alerts = this.alerts.slice();
-                const len = alerts.length;
-                if (len <= 3) {
-                    return alerts;
-                }
-                return alerts.slice(len - max, len).reverse();
+                return this.messages;
             },
             messagesCount() {
-                return this.lastMessages.length.toString();
+                return this.lastMessages.length;
+            },
+            schemasCount() {
+                return this.schemas.length;
+            },
+            unreadMessagesCount() {
+                return this.messagesCount - this.readMessagesCount;
             },
         },
         created() {
@@ -47,10 +47,14 @@
                 });
             },
             showError(text) {
-                this.alerts.push({type: 'error', text});
+                this.snackbar.model = true;
+                this.snackbar.color = 'error';
+                this.snackbar.text = text;
             },
             showNotification(text) {
-                this.alerts.push({type: 'success', text});
+                this.snackbar.model = true;
+                this.snackbar.color = 'success';
+                this.snackbar.text = text;
             },
             onSuccess(message) {
                 this.showNotification(message);
@@ -63,6 +67,19 @@
                 this.loadSchemas();
             },
         },
+        watch: {
+            messages(v) {
+                // tab with messages is active now
+                if (this.tab === 1) {
+                    this.readMessagesCount = v.length;
+                }
+            },
+            tab(v) {
+                if (v === 1) {
+                    this.readMessagesCount = this.messages.length;
+                }
+            }
+        },
     }
 </script>
 
@@ -73,19 +90,21 @@
         </v-app-bar>
         <v-main>
             <v-container fluid>
-
-                <v-tabs v-model="tab" color="basil" grow dark background-color="primary">
+                <v-tabs v-model="tab" grow background-color="primary">
                     <v-tab>Publish</v-tab>
                     <v-tab>
-                        <v-badge color="green" :content="messagesCount">Subscribe</v-badge>
+                        <v-badge :color="unreadMessagesCount === 0 ? 'grey' : 'green'" :content="unreadMessagesCount.toString()">Subscribe</v-badge>
                     </v-tab>
-                    <v-tab>Manage schemas</v-tab>
+                    <v-tab>
+                        <v-badge :color="schemasCount === 0 ? 'grey' : 'green'" :content="schemasCount.toString()">Manage schemas</v-badge>
+                    </v-tab>
                 </v-tabs>
-
                 <v-tabs-items v-model="tab">
                     <v-tab-item>
                         <v-card flat>
                             <v-card-text>
+                                <v-alert dense outlined dismissible type="info">Publish message using JSON examples generated from Avro schemas. Subject is received from the "namespace" field.</v-alert>
+                                <v-alert v-if="!schemas.length" dense outlined dismissible type="warning">You need upload zip file with Avro schemas.</v-alert>
                                 <Publish :schemas="schemas" @success="onSuccess" @error="onError"></Publish>
                             </v-card-text>
                         </v-card>
@@ -93,6 +112,7 @@
                     <v-tab-item>
                         <v-card flat>
                             <v-card-text>
+                                <v-alert dense outlined dismissible type="info">You'll see messages from all subjects</v-alert>
                                 <Subscribe :events="lastMessages"></Subscribe>
                             </v-card-text>
                         </v-card>
@@ -105,22 +125,12 @@
                         </v-card>
                     </v-tab-item>
                 </v-tabs-items>
-
-                <v-alert v-for="item in lastAlerts" dense outlined dismissible :type="item.type">{{ item.text }}
-                </v-alert>
-
-                <v-row>
-                    <v-col>
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col>
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col>
-                    </v-col>
-                </v-row>
+                <v-snackbar v-model="snackbar.model" :color="snackbar.color" :timeout="snackbar.timeout">
+                    {{ snackbar.text }}
+                    <template v-slot:action="{ attrs }">
+                        <v-btn dark text v-bind="attrs" @click="snackbar.model = false">Close</v-btn>
+                    </template>
+                </v-snackbar>
             </v-container>
         </v-main>
     </v-app>
@@ -129,14 +139,5 @@
 <style>
     [v-cloak] {
         display: none;
-    }
-
-    /* Helper classes */
-    .basil {
-        background-color: #FFFBE6 !important;
-    }
-
-    .basil--text {
-        color: #356859 !important;
     }
 </style>
