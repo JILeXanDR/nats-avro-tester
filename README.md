@@ -22,6 +22,10 @@ TODO
 > Just run both Backend and Frontend using instructions below.
 
 ### Backend
+ENV:
+- PORT (default: 8999)
+- NATS_SERVER (default: http://localhost:4222)
+
 In the root of the project directory:
 ```shell script
 go run .
@@ -33,4 +37,4 @@ In the root of the project directory:
 ```shell script
 (cd web && npm run dev)
 ```
-It will keep up to date app assets in your `web/dist`.
+It will keep up to date app assets inside `web/dist`.
