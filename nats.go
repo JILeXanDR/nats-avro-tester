@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/nats-io/nats.go"
+	"strings"
 )
 
 type natsClient struct {
@@ -40,12 +41,19 @@ func (c *natsClient) Publish(ctx context.Context, subject string, message interf
 }
 
 func (c *natsClient) SubscribeAll(next func(string, interface{})) error {
-	_, err := c.conn.QueueSubscribe("*", "*", func(subject string, vPrt interface{}) {
-		c.logger.Debug().Str("subject", subject).Interface("data", vPrt).Msg("got decoded from subscriber")
-		next(subject, vPrt)
-	})
-	if err != nil {
-		return WrapError(err, "subscribing to subject %s", "*")
+	max := []string{"*", "*", "*", "*", "*", "*", "*", "*", "*", "*"}
+	for i := 0; i < len(max); i++ {
+		wildcardSubject := strings.Join(max[:i+1], ".")
+		l := c.logger.With().Str("subject", wildcardSubject).Logger()
+		_, err := c.conn.Subscribe(wildcardSubject, func(subject string, vPrt interface{}) {
+			c.logger.Debug().Str("subject", subject).Interface("data", vPrt).Msg("got decoded from subscriber")
+			next(subject, vPrt)
+		})
+		if err != nil {
+			l.Err(err).Msg("failed to subscribe")
+		} else {
+			l.Info().Msg("subscription successful")
+		}
 	}
 	return nil
 }

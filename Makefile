@@ -1,4 +1,5 @@
 DOCKER_IMAGE_NAME=jilexandr/natsavrotester
+GIT_TAG := $$(git describe --tag)
 
 default: help
 
@@ -31,8 +32,11 @@ docker-compose:
 	PORT=9999 docker-compose up
 
 docker-push:
-	@echo "pushing docker image to Docker Hub..."
-	docker push ${DOCKER_IMAGE_NAME}:latest
+	@echo "tagging an image ${DOCKER_IMAGE_NAME} using current git tag $(GIT_TAG)"
+	@docker tag ${DOCKER_IMAGE_NAME} ${DOCKER_IMAGE_NAME}:$(GIT_TAG)
+	@echo "pushing docker image ${DOCKER_IMAGE_NAME}:$(GIT_TAG) to Docker Hub..."
+	docker push ${DOCKER_IMAGE_NAME}:${GIT_TAG}
+	@echo "done!"
 
 test:
 	@echo "running all tests..."
