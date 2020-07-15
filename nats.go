@@ -40,10 +40,11 @@ func (c *natsClient) Publish(ctx context.Context, subject string, message interf
 	return nil
 }
 
-func (c *natsClient) SubscribeAll(next func(string, interface{})) error {
-	max := []string{"*", "*", "*", "*", "*", "*", "*", "*", "*", "*"}
-	for i := 0; i < len(max); i++ {
-		wildcardSubject := strings.Join(max[:i+1], ".")
+func (c *natsClient) SubscribeAll(levels int64, next func(string, interface{})) error {
+	max := make([]string, 0, levels)
+	for i := 0; i < int(levels); i++ {
+		max = append(max, "*")
+		wildcardSubject := strings.Join(max, ".")
 		l := c.logger.With().Str("subject", wildcardSubject).Logger()
 		_, err := c.conn.Subscribe(wildcardSubject, func(subject string, vPrt interface{}) {
 			c.logger.Debug().Str("subject", subject).Interface("data", vPrt).Msg("got decoded from subscriber")

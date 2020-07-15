@@ -9,14 +9,14 @@ import (
 )
 
 func main() {
-	logger, err := NewLogger()
-	if err != nil {
-		panic(fmt.Sprintf("creating logger: %+v", err))
-	}
-
 	config, err := ReadConfigUsingEnv()
 	if err != nil {
-		logger.Fatal().Err(err).Msg("reading config")
+		panic(fmt.Sprintf("reading config: %+v", err))
+	}
+
+	logger, err := NewLogger(config.LogLevel)
+	if err != nil {
+		panic(fmt.Sprintf("creating logger: %+v", err))
 	}
 
 	logger.Debug().Interface("config", config).Msg("app initialization...")
@@ -39,7 +39,7 @@ func main() {
 	sseHub := NewSSEHub(logger.As("SSE-HUB"))
 	go sseHub.Run()
 
-	if err := natsClient.SubscribeAll(func(subject string, data interface{}) {
+	if err := natsClient.SubscribeAll(config.MaxHierarchyLevel, func(subject string, data interface{}) {
 		go sseHub.Notify(map[string]interface{}{
 			"subject": subject,
 			"payload": data,

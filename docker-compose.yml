@@ -1,10 +1,12 @@
 version: "3"
 services:
   app:
-    image: jilexandr/natsavrotester:1.0.0
+    image: jilexandr/natsavrotester:1.0.1
     environment:
       PORT: 8080
       NATS_SERVER: "http://nats:4222"
+      MAX_HIERARCHY_LEVEL: 1
+      LOG_LEVEL: "trace"
     ports:
       - 9999:8080
     links:

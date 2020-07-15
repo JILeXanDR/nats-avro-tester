@@ -20,7 +20,6 @@ docker-server:
 
 docker-build:
 	@echo "building docker image..."
-	#docker build --no-cache -t ${DOCKER_IMAGE_NAME} -f Dockerfile .
 	docker build -t ${DOCKER_IMAGE_NAME} -f Dockerfile .
 
 docker-run:
