@@ -40,6 +40,26 @@ docker-compose up
 
 ## Want to use in your own project?
 Just use [image](https://hub.docker.com/repository/docker/jilexandr/natsavrotester) from Docker Hub
+### Configuration example
+```yaml
+version: "3"
+services:
+  app:
+    image: jilexandr/natsavrotester:1.1.2
+    environment:
+      PORT: 8080
+      NATS_SERVER: "http://nats:4222"
+      MAX_HIERARCHY_LEVEL: 5
+      LOG_LEVEL: "trace"
+    ports:
+      - 9999:8080
+    links:
+      - nats
+  nats:
+    image: nats:2.1
+    ports:
+      - 4222
+```
 
 ## How to develop?
 > At the moment there is no possibility to develop frontend part without backend part.
