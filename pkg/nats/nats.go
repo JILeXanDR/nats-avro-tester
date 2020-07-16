@@ -16,14 +16,14 @@ type Client struct {
 func NewClient(encoder nats.Encoder, server string, logger *logger.Logger) (*Client, error) {
 	conn, err := nats.Connect(server)
 	if err != nil {
-		return nil, errors.WrapError(err, "connecting NATS server")
+		return nil, errors.Wrap(err, "connecting NATS server")
 	}
 
 	nats.RegisterEncoder("avro", encoder)
 
 	ec, err := nats.NewEncodedConn(conn, "avro")
 	if err != nil {
-		return nil, errors.WrapError(err, "creating encoded connection")
+		return nil, errors.Wrap(err, "creating encoded connection")
 	}
 
 	return &Client{conn: ec, logger: logger}, nil
@@ -37,7 +37,7 @@ func (c *Client) Publish(ctx context.Context, subject string, message interface{
 	c.logger.Debug().Str("subject", subject).Interface("data", message).Msg("publish message")
 	err := c.conn.Publish(subject, message)
 	if err != nil {
-		return errors.WrapError(err, "publishing message to NATS")
+		return errors.Wrap(err, "publishing message to NATS")
 	}
 	return nil
 }

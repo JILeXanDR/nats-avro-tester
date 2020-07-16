@@ -1,7 +1,7 @@
 version: "3"
 services:
   app:
-    image: jilexandr/natsavrotester:1.0.1
+    image: jilexandr/natsavrotester:1.1.2
     environment:
       PORT: 8080
       NATS_SERVER: "http://nats:4222"

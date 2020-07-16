@@ -22,7 +22,7 @@ func NewLocalCodecStorage(dir string) (CodecStorage, error) {
 
 	schemas, err := lcf.readAllAvroSchemas(dir)
 	if err != nil {
-		return nil, errors.WrapError(err, "reading all avro schemas")
+		return nil, errors.Wrap(err, "reading all avro schemas")
 	}
 
 	codecs := make(map[string]*CodecWrapper)
@@ -30,21 +30,21 @@ func NewLocalCodecStorage(dir string) (CodecStorage, error) {
 	for _, content := range schemas {
 		var schema map[string]interface{}
 		if err := json.NewDecoder(bytes.NewBuffer(content)).Decode(&schema); err != nil {
-			err = errors.WrapError(err, "decoding from JSON into a map")
+			err = errors.Wrap(err, "decoding from JSON into a map")
 			return nil, err
 		}
 
 		name, ok := schema["name"].(string)
 		if !ok || name == "" {
-			return nil, errors.NewError("schema name not found or empty")
+			return nil, errors.New("schema name not found or empty")
 		}
 		namespace, ok := schema["namespace"].(string)
 		if !ok || namespace == "" {
-			return nil, errors.NewError("schema namespace not found or empty")
+			return nil, errors.New("schema namespace not found or empty")
 		}
 		codec, err := goavro.NewCodec(string(content))
 		if err != nil {
-			return nil, errors.WrapError(err, "creating new codec from avro schema")
+			return nil, errors.Wrap(err, "creating new codec from avro schema")
 		}
 		codecs[namespace] = &CodecWrapper{
 			Codec:     codec,
@@ -96,19 +96,19 @@ func (l *localCodecStorage) readAllAvroSchemas(dir string) ([][]byte, error) {
 		}
 		f, err := os.Open(path)
 		if err != nil {
-			return errors.WrapError(err, "opening path %s", path)
+			return errors.Wrap(err, "opening path %s", path)
 		}
 
 		content, err := ioutil.ReadAll(f)
 		if err != nil {
-			return errors.WrapError(err, "reading content of file")
+			return errors.Wrap(err, "reading content of file")
 		}
 
 		list = append(list, content)
 		return nil
 	})
 	if err != nil {
-		return nil, errors.WrapError(err, "walking inside directory %s", dir)
+		return nil, errors.Wrap(err, "walking inside directory %s", dir)
 	}
 	return list, nil
 }

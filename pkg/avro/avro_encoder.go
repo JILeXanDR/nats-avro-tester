@@ -33,15 +33,15 @@ func (enc *avroEncoder) encode(subject string, v interface{}) ([]byte, error) {
 	enc.logger.Debug().Str("subject", subject).Msg("encoding message data")
 	codec, err := enc.finder.FindByNamespace(subject)
 	if err != nil {
-		return nil, errors.WrapError(err, "finding codec by subject %s", subject)
+		return nil, errors.Wrap(err, "finding codec by subject %s", subject)
 	}
 	if codec == nil {
-		return nil, errors.NewError("codec for subject %s not found", subject)
+		return nil, errors.New("codec for subject %s not found", subject)
 	}
 
 	native, err := codec.BinaryFromNative(nil, v)
 	if err != nil {
-		return nil, errors.WrapError(err, "converting plain map to binary Avro data")
+		return nil, errors.Wrap(err, "converting plain map to binary Avro data")
 	}
 	return native, nil
 }
@@ -60,7 +60,7 @@ func (enc *avroEncoder) decode(subject string, data []byte, vPtr interface{}) er
 	enc.logger.Debug().Str("subject", subject).Bytes("data", data).Msg("decoding message data")
 	codec, err := enc.finder.FindByNamespace(subject)
 	if err != nil {
-		return errors.WrapError(err, `finding codec by subject "%s"`, subject)
+		return errors.Wrap(err, `finding codec by subject "%s"`, subject)
 	}
 	if codec == nil {
 		i, _ := vPtr.(*interface{})

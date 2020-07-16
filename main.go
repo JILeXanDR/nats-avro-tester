@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"strconv"
+	"time"
 
 	"nats-viewer/api"
 	"nats-viewer/config"
@@ -49,9 +51,6 @@ func main() {
 	sseHub := sse.NewHub(lgr.As("SSE-HUB"))
 	go sseHub.Run()
 
-	// TODO: use struct?
-	ListenNATSMessages(natsClient, sseHub, lgr, cfg.MaxHierarchyLevel)
-
 	defer func() {
 		lgr.Info().Msg("draining NATS connection...")
 		if err := natsClient.Drain(); err != nil {
@@ -59,20 +58,39 @@ func main() {
 		}
 	}()
 
+	if err := natsClient.SubscribeAll(cfg.MaxHierarchyLevel, func(subject string, data interface{}) {
+		sseHub.NotifyAll(map[string]interface{}{
+			"subject": subject,
+			"payload": data,
+			"when":    time.Now().UTC().Format(time.RFC3339),
+		})
+	}); err != nil {
+		lgr.Error().Err(err).Msg("failed to subscribe to all NATS subjects")
+	}
+
 	handlers := api.NewAPIHandlers(natsClient, codecStorage, lgr, sseHub)
 
 	e := echo.New()
 
-	e.HideBanner, e.HidePort = true, true
+	e.HideBanner, e.HidePort, e.Debug = true, true, true
 	e.Validator = validator.New()
-	//e.HTTPErrorHandler = HTTPErrorHandler(e)
+
+	e.HTTPErrorHandler = func(err error, c echo.Context) {
+		switch val := err.(type) {
+		case *echo.HTTPError:
+			c.JSON(val.Code, echo.Map{
+				"message": val.Message,
+			})
+		default:
+			c.JSON(http.StatusInternalServerError, echo.Map{
+				"message": err.Error(),
+			})
+		}
+	}
 
 	e.Use(middleware.Recover())
-	//e.Use(middleware.CORS())
 	e.Use(middleware.RequestID())
 	e.Use(middleware.BodyLimit("1M"))
-	//e.Use(middleware.Logger())
-	//e.Use(RequestLogger(logger.As("http")))
 
 	e.Static("/", "./web/dist")
 

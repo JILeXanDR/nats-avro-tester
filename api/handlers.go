@@ -64,12 +64,12 @@ func (h *apiHandlers) GetSchemas(c echo.Context) error {
 func (h *apiHandlers) UploadSchema(c echo.Context) error {
 	formFile, err := c.FormFile("file")
 	if err != nil {
-		return errors.WrapError(err, "getting form file")
+		return errors.Wrap(err, "getting form file")
 	}
 
 	f, err := formFile.Open()
 	if err != nil {
-		return errors.WrapError(err, "opening form file")
+		return errors.Wrap(err, "opening form file")
 	}
 	defer func() {
 		if err := f.Close(); err != nil {
@@ -90,19 +90,19 @@ func (h *apiHandlers) UploadSchema(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusNoContent, nil)
+	return c.JSON(http.StatusOK, echo.Map{})
 }
 
 // TODO: move to some service
 func (h *apiHandlers) parseSchemas(f multipart.File) ([]string, error) {
 	b, err := ioutil.ReadAll(f)
 	if err != nil {
-		return nil, errors.WrapError(err, "reading file content")
+		return nil, errors.Wrap(err, "reading file content")
 	}
 
 	zipReader, err := zip.NewReader(f, int64(len(b)))
 	if err != nil {
-		return nil, errors.WrapError(err, "creating zip reader from form file content")
+		return nil, errors.Wrap(err, "creating zip reader from form file content")
 	}
 
 	var schemas = make([]string, 0)
@@ -130,7 +130,10 @@ func (h *apiHandlers) parseSchemas(f multipart.File) ([]string, error) {
 func (h *apiHandlers) CreateMessage(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	var req PublishMessageRequest
+	var req = struct {
+		Subject string      `json:"subject" validate:"required"`
+		Payload interface{} `json:"payload" validate:"required"`
+	}{}
 	if err := c.Bind(&req); err != nil {
 		return err
 	}
@@ -140,10 +143,10 @@ func (h *apiHandlers) CreateMessage(c echo.Context) error {
 	}
 
 	if err := h.nats.Publish(ctx, req.Subject, req.Payload); err != nil {
-		return errors.WrapError(err, "publishing message")
+		return errors.Wrap(err, "publishing message")
 	}
 
-	return c.JSON(http.StatusNoContent, nil)
+	return c.JSON(http.StatusOK, echo.Map{})
 }
 
 func (h *apiHandlers) MessagesStream(c echo.Context) error {

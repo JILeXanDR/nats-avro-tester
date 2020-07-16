@@ -37,6 +37,9 @@ docker-push:
 	docker push ${DOCKER_IMAGE_NAME}:${GIT_TAG}
 	@echo "done!"
 
+example:
+	docker-compose up
+
 test:
 	@echo "running all tests..."
 	@go test ./...

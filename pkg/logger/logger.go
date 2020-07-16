@@ -15,7 +15,7 @@ func New(level string) (*Logger, error) {
 	output := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
 	logger := zerolog.New(output).With().Timestamp().Logger()
 	if l, err := zerolog.ParseLevel(level); err != nil {
-		return nil, errors.WrapError(err, "parsing log level %s", level)
+		return nil, errors.Wrap(err, "parsing log level %s", level)
 	} else {
 		logger = logger.Level(l)
 	}

@@ -54,7 +54,7 @@ func (l *imMemoryCodecStorage) addSchema(content string) error {
 	var schema map[string]interface{}
 
 	if err := json.NewDecoder(bytes.NewBuffer([]byte(content))).Decode(&schema); err != nil {
-		return errors.WrapError(err, "decoding text avro schema into a map")
+		return errors.Wrap(err, "decoding text avro schema into a map")
 	}
 
 	name, _ := schema["name"].(string)
@@ -62,12 +62,12 @@ func (l *imMemoryCodecStorage) addSchema(content string) error {
 
 	codec, err := goavro.NewCodec(content)
 	if err != nil {
-		return errors.WrapError(err, "creating new codec from avro schema")
+		return errors.Wrap(err, "creating new codec from avro schema")
 	}
 
 	example, err := l.exampleGenerator.Generate(schema)
 	if err != nil {
-		return errors.WrapError(err, "generating schema example, name: %s, namespace: %s", name, namespace)
+		return errors.Wrap(err, "generating schema example, name: %s, namespace: %s", name, namespace)
 	}
 
 	l.codecs[namespace] = &CodecWrapper{

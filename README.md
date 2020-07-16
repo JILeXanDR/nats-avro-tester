@@ -1,18 +1,45 @@
 # NATS AVRO TESTER
-> TODO
+
+## Disclaimer
+
+**This project has been created for own needs and may contain bugs.**
+
+**Tests are also missing. :(**
+
+**Use it carefully on your own risk!**
 
 ## Stack
 - golang 1.14
 - vuejs
 - docker
 - nats
-- lib for decoding/encoding avro schemas
+- lib for decoding/encoding Avro schemas
+
+## Features
+- uploading your zipped [Avro](https://avro.apache.org) schemas
+- auto discovering list of subjects using "namespace" from Avro schemas
+- publishing messages (auto encode to Avro)
+- receiving any messages from all subjects
+- auto decoding messages using Avro schemas
+
+## TODO
+- better documentation
+- support publishing into JSON format
+- support publishing to custom subject
+- tests
+- refactoring
+- improve UI
 
 ## Web UI
 ![Alt text](.github/web-ui.png "Web UI")
 
-## Why?
-TODO
+## See working example
+```shell script
+docker-compose up
+```
+
+## Want to use in your own project?
+Just use [image](https://hub.docker.com/repository/docker/jilexandr/natsavrotester) from Docker Hub
 
 ## How to develop?
 > At the moment there is no possibility to develop frontend part without backend part.
