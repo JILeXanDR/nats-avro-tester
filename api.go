@@ -42,16 +42,11 @@ func (a *apiHandlers) GetSchemas(c echo.Context) error {
 	list := make([]*responseItem, 0, len(codecs))
 
 	for _, codec := range codecs {
-		example, err := codec.Example()
-		if err != nil {
-			return err
-		}
-		schema := codec.Schema()
 		list = append(list, &responseItem{
 			Name:      codec.Name(),
 			Namespace: codec.Namespace(),
-			Schema:    schema,
-			Example:   example,
+			Schema:    codec.Schema(),
+			Example:   codec.Example(),
 		})
 	}
 

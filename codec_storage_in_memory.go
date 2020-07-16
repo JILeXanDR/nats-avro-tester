@@ -8,12 +8,14 @@ import (
 
 type imMemoryCodecStorage struct {
 	// key is namespace
-	codecs map[string]*CodecWrapper
+	codecs           map[string]*CodecWrapper
+	exampleGenerator *ExampleGenerator
 }
 
-func NewInMemoryCodecStorage() (CodecStorage, error) {
+func NewInMemoryCodecStorage(exampleGenerator *ExampleGenerator) (CodecStorage, error) {
 	lcf := &imMemoryCodecStorage{
-		codecs: make(map[string]*CodecWrapper),
+		codecs:           make(map[string]*CodecWrapper),
+		exampleGenerator: exampleGenerator,
 	}
 	return lcf, nil
 }
@@ -56,15 +58,24 @@ func (l *imMemoryCodecStorage) addSchema(content string) error {
 
 	name, _ := schema["name"].(string)
 	namespace, _ := schema["namespace"].(string)
-	codec, err := goavro.NewCodec(string(content))
+
+	codec, err := goavro.NewCodec(content)
 	if err != nil {
 		return WrapError(err, "creating new codec from avro schema")
 	}
+
+	example, err := l.exampleGenerator.Generate(schema)
+	if err != nil {
+		return WrapError(err, "generating schema example, name: %s, namespace: %s", name, namespace)
+	}
+
 	l.codecs[namespace] = &CodecWrapper{
 		Codec:     codec,
 		name:      name,
 		namespace: namespace,
 		schema:    schema,
+		example:   example,
 	}
+
 	return nil
 }

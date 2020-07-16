@@ -21,7 +21,9 @@ func main() {
 
 	logger.Debug().Interface("config", config).Msg("app initialization...")
 
-	codecStorage, err := NewInMemoryCodecStorage()
+	exampleGenerator := NewExampleGenerator()
+
+	codecStorage, err := NewInMemoryCodecStorage(exampleGenerator)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("creating local codec finder")
 	}
