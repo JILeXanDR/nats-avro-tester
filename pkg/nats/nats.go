@@ -1,46 +1,48 @@
-package main
+package nats
 
 import (
 	"context"
 	"github.com/nats-io/nats.go"
+	"nats-viewer/pkg/errors"
+	"nats-viewer/pkg/logger"
 	"strings"
 )
 
-type natsClient struct {
+type Client struct {
 	conn   *nats.EncodedConn
-	logger *Logger
+	logger *logger.Logger
 }
 
-func NewNATSClient(encoder nats.Encoder, server string, logger *Logger) (*natsClient, error) {
+func NewClient(encoder nats.Encoder, server string, logger *logger.Logger) (*Client, error) {
 	conn, err := nats.Connect(server)
 	if err != nil {
-		return nil, WrapError(err, "connecting NATS server")
+		return nil, errors.WrapError(err, "connecting NATS server")
 	}
 
 	nats.RegisterEncoder("avro", encoder)
 
 	ec, err := nats.NewEncodedConn(conn, "avro")
 	if err != nil {
-		return nil, WrapError(err, "creating encoded connection")
+		return nil, errors.WrapError(err, "creating encoded connection")
 	}
 
-	return &natsClient{conn: ec, logger: logger}, nil
+	return &Client{conn: ec, logger: logger}, nil
 }
 
-func (c *natsClient) Drain() error {
+func (c *Client) Drain() error {
 	return c.conn.Drain()
 }
 
-func (c *natsClient) Publish(ctx context.Context, subject string, message interface{}) error {
-	c.logger.Debug().Str("subject", subject).Interface("data", message).Msg(`publish data`)
+func (c *Client) Publish(ctx context.Context, subject string, message interface{}) error {
+	c.logger.Debug().Str("subject", subject).Interface("data", message).Msg("publish message")
 	err := c.conn.Publish(subject, message)
 	if err != nil {
-		return WrapError(err, "publishing message to NATS connection")
+		return errors.WrapError(err, "publishing message to NATS")
 	}
 	return nil
 }
 
-func (c *natsClient) SubscribeAll(levels int64, next func(string, interface{})) error {
+func (c *Client) SubscribeAll(levels int64, next func(subject string, payload interface{})) error {
 	max := make([]string, 0, levels)
 	for i := 0; i < int(levels); i++ {
 		max = append(max, "*")
@@ -53,7 +55,7 @@ func (c *natsClient) SubscribeAll(levels int64, next func(string, interface{})) 
 		if err != nil {
 			l.Err(err).Msg("failed to subscribe")
 		} else {
-			l.Info().Msg("subscription successful")
+			l.Debug().Msg("subscription successful")
 		}
 	}
 	return nil

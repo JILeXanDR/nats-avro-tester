@@ -1,16 +1,18 @@
-package main
+package avro
 
 import (
 	"fmt"
 	"github.com/nats-io/nats.go"
+	"nats-viewer/pkg/errors"
+	"nats-viewer/pkg/logger"
 )
 
 type avroEncoder struct {
 	finder CodecStorage
-	logger *Logger
+	logger *logger.Logger
 }
 
-func NewAvroEncoder(finder CodecStorage, logger *Logger) (nats.Encoder, error) {
+func NewAvroEncoder(finder CodecStorage, logger *logger.Logger) (nats.Encoder, error) {
 	return &avroEncoder{
 		finder: finder,
 		logger: logger,
@@ -31,15 +33,15 @@ func (enc *avroEncoder) encode(subject string, v interface{}) ([]byte, error) {
 	enc.logger.Debug().Str("subject", subject).Msg("encoding message data")
 	codec, err := enc.finder.FindByNamespace(subject)
 	if err != nil {
-		return nil, WrapError(err, "finding codec by subject %s", subject)
+		return nil, errors.WrapError(err, "finding codec by subject %s", subject)
 	}
 	if codec == nil {
-		return nil, NewError("codec for subject %s not found", subject)
+		return nil, errors.NewError("codec for subject %s not found", subject)
 	}
 
 	native, err := codec.BinaryFromNative(nil, v)
 	if err != nil {
-		return nil, WrapError(err, "converting plain map to binary Avro data")
+		return nil, errors.WrapError(err, "converting plain map to binary Avro data")
 	}
 	return native, nil
 }
@@ -58,7 +60,7 @@ func (enc *avroEncoder) decode(subject string, data []byte, vPtr interface{}) er
 	enc.logger.Debug().Str("subject", subject).Bytes("data", data).Msg("decoding message data")
 	codec, err := enc.finder.FindByNamespace(subject)
 	if err != nil {
-		return WrapError(err, `finding codec by subject "%s"`, subject)
+		return errors.WrapError(err, `finding codec by subject "%s"`, subject)
 	}
 	if codec == nil {
 		i, _ := vPtr.(*interface{})

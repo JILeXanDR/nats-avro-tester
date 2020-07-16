@@ -13,7 +13,7 @@
         computed: {
             payloadExample() {
                 let example = {};
-                if (this.schemas.length > 0 && this.form.type) {
+                if (this.form.type) {
                     example = this.schemas.find(v => v.name === this.form.type).example;
                 }
                 return JSON.stringify(example, null, 2);
@@ -43,7 +43,7 @@
                         subject: this.form.subject,
                         payload: payload,
                     });
-                    this.$emit('success', res.message);
+                    this.$emit('success', 'Message is sent.');
                 } catch (e) {
                     this.$emit('error', e.message);
                 }
@@ -69,16 +69,9 @@
 <template>
     <div>
         <v-form @submit.prevent="processForm">
-            <v-autocomplete v-model="form.type" :items="schemas" item-text="namespace" item-value="name" dense filled
-                            label="Subject" no-data-text="No schemas found"></v-autocomplete>
-            <v-textarea outlined label="Payload" :value="form.payload" v-model="form.payload"
-                        :auto-grow="true"></v-textarea>
-            <v-btn type=submit :disabled="!formValid" color="success" class="mr-4">Publish message
-            </v-btn>
+            <v-autocomplete v-model="form.type" :items="schemas" item-text="namespace" item-value="name" dense filled label="Subject" no-data-text="No schemas found"></v-autocomplete>
+            <v-textarea outlined label="Payload" :value="form.payload" v-model="form.payload" :auto-grow="true"></v-textarea>
+            <v-btn type=submit :disabled="!formValid" color="success" class="mr-4">Publish message</v-btn>
         </v-form>
     </div>
 </template>
-
-<style scoped>
-
-</style>

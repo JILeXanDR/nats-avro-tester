@@ -2,19 +2,27 @@
     export default {
         data() {
             return {
-                schemasFile: null,
+                file: null,
             };
+        },
+        computed: {
+            fileEmpty() {
+                return this.file === null;
+            },
         },
         methods: {
             async uploadSchemas() {
                 try {
-                    const res = await this.$backend.uploadSchema(this.schemasFile);
-                    this.schemasFile = null;
-                    this.$emit('success', res.message);
+                    const res = await this.$backend.uploadSchema(this.file);
+                    this.clearFile();
+                    this.$emit('success', 'File was uploaded.');
                 } catch (e) {
                     this.$emit('error', e.message);
                 }
             },
+            clearFile() {
+                this.file = null;
+            }
         },
     }
 </script>
@@ -22,14 +30,8 @@
 <template>
     <div>
         <v-form @submit.prevent="uploadSchemas">
-                <v-file-input v-model="schemasFile" label="Schemas zip file" outlined dense></v-file-input>
-                <v-btn type=submit :disabled="schemasFile==null" clearable color="success" class="mr-4">
-                    Upload
-                </v-btn>
+            <v-file-input v-model="file" label="Schemas zip file" outlined dense></v-file-input>
+            <v-btn type=submit :disabled="fileEmpty" clearable color="success" class="mr-4">Upload</v-btn>
         </v-form>
     </div>
 </template>
-
-<style scoped>
-
-</style>

@@ -6,10 +6,10 @@
 - vuejs
 - docker
 - nats
-- lib for decoding/encoding avro schema
+- lib for decoding/encoding avro schemas
 
 ## Web UI
-![Alt text](.github/web-ui-1.png "Web UI")
+![Alt text](.github/web-ui.png "Web UI")
 
 ## Why?
 TODO

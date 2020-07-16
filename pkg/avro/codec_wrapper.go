@@ -1,4 +1,4 @@
-package main
+package avro
 
 import (
 	"github.com/karrick/goavro"

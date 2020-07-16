@@ -1,4 +1,4 @@
-package main
+package validator
 
 import (
 	"github.com/go-playground/locales/en"
@@ -54,7 +54,7 @@ func (cv *customValidator) extractMetas(err error) error {
 	return validationErr
 }
 
-func NewValidator() echo.Validator {
+func New() echo.Validator {
 	trans, _ := ut.New(en.New()).GetTranslator("en")
 
 	return &customValidator{

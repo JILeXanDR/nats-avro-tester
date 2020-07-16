@@ -10,7 +10,6 @@
                 tab: null,
                 schemas: [],
                 messages: [],
-                alerts: [],
                 readMessagesCount: 0,
                 snackbar: {
                     model: false,
@@ -21,11 +20,8 @@
             };
         },
         computed: {
-            lastMessages() {
-                return this.messages;
-            },
             messagesCount() {
-                return this.lastMessages.length;
+                return this.messages.length;
             },
             schemasCount() {
                 return this.schemas.length;
@@ -36,28 +32,29 @@
         },
         created() {
             this.loadSchemas();
-            this.$backend.connectMessagesStream((message) => {
-                this.messages.push(message);
-            });
+            this.$backend.connectMessagesStream(message => this.messages.push(message));
         },
         methods: {
-            loadSchemas() {
-                this.$backend.fetchSchemas().then(res => {
-                    this.schemas = res;
-                });
+            async loadSchemas() {
+                try {
+                    this.$backend.fetchSchemas().then(res => this.schemas = res);
+                } catch (e) {
+                    this.showError(e.message);
+                }
+            },
+            showNotification(type, text) {
+                this.snackbar.model = true;
+                this.snackbar.color = type;
+                this.snackbar.text = text;
             },
             showError(text) {
-                this.snackbar.model = true;
-                this.snackbar.color = 'error';
-                this.snackbar.text = text;
+                this.showNotification('error', text);
             },
-            showNotification(text) {
-                this.snackbar.model = true;
-                this.snackbar.color = 'success';
-                this.snackbar.text = text;
+            showSuccess(text) {
+                this.showNotification('success', text);
             },
             onSuccess(message) {
-                this.showNotification(message);
+                this.showSuccess(message);
             },
             onError(message) {
                 this.showError(message);
@@ -103,7 +100,7 @@
                     <v-tab-item>
                         <v-card flat>
                             <v-card-text>
-                                <v-alert dense outlined dismissible type="info">Publish message using JSON examples generated from Avro schemas. Subject is received from the "namespace" field.</v-alert>
+                                <v-alert dense outlined dismissible type="info">Publish message using JSON examples with default values generated from Avro schemas. Subject is filled using "namespace" field.</v-alert>
                                 <v-alert v-if="!schemas.length" dense outlined dismissible type="warning">You need upload zip file with Avro schemas.</v-alert>
                                 <Publish :schemas="schemas" @success="onSuccess" @error="onError"></Publish>
                             </v-card-text>
@@ -112,8 +109,8 @@
                     <v-tab-item>
                         <v-card flat>
                             <v-card-text>
-                                <v-alert dense outlined dismissible type="info">You'll see messages from all subjects</v-alert>
-                                <Subscribe :events="lastMessages"></Subscribe>
+                                <v-alert dense outlined dismissible type="info">You'll see messages from all subjects. Even they are not encoded using Avro.</v-alert>
+                                <Subscribe :events="messages"></Subscribe>
                             </v-card-text>
                         </v-card>
                     </v-tab-item>

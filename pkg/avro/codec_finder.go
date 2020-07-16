@@ -1,4 +1,4 @@
-package main
+package avro
 
 type CodecStorage interface {
 	GetAll() ([]*CodecWrapper, error)

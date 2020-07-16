@@ -1,9 +1,10 @@
-package main
+package avro
 
 import (
 	"bytes"
 	"encoding/json"
 	"github.com/karrick/goavro"
+	"nats-viewer/pkg/errors"
 )
 
 type imMemoryCodecStorage struct {
@@ -53,7 +54,7 @@ func (l *imMemoryCodecStorage) addSchema(content string) error {
 	var schema map[string]interface{}
 
 	if err := json.NewDecoder(bytes.NewBuffer([]byte(content))).Decode(&schema); err != nil {
-		return WrapError(err, "decoding text avro schema into a map")
+		return errors.WrapError(err, "decoding text avro schema into a map")
 	}
 
 	name, _ := schema["name"].(string)
@@ -61,12 +62,12 @@ func (l *imMemoryCodecStorage) addSchema(content string) error {
 
 	codec, err := goavro.NewCodec(content)
 	if err != nil {
-		return WrapError(err, "creating new codec from avro schema")
+		return errors.WrapError(err, "creating new codec from avro schema")
 	}
 
 	example, err := l.exampleGenerator.Generate(schema)
 	if err != nil {
-		return WrapError(err, "generating schema example, name: %s, namespace: %s", name, namespace)
+		return errors.WrapError(err, "generating schema example, name: %s, namespace: %s", name, namespace)
 	}
 
 	l.codecs[namespace] = &CodecWrapper{

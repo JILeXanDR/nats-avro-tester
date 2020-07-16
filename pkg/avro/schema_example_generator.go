@@ -1,4 +1,4 @@
-package main
+package avro
 
 import (
 	"errors"
@@ -148,7 +148,7 @@ func readObjectFields(fields []map[string]interface{}) (map[string]interface{}, 
 	for _, field := range fields {
 		name, value, err := readField(field)
 		if err != nil {
-			return nil, WrapError(err, "reading field")
+			return nil, fmt.Errorf("reading field: %w", err)
 		}
 		res[name] = value
 	}

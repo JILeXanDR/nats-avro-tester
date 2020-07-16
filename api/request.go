@@ -1,4 +1,4 @@
-package main
+package api
 
 type PublishMessageRequest struct {
 	Subject string      `json:"subject" validate:"required"`

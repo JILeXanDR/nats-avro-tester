@@ -1,13 +1,16 @@
-package main
+package avro
 
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/karrick/goavro"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"nats-viewer/pkg/errors"
+
+	"github.com/karrick/goavro"
 )
 
 type localCodecStorage struct {
@@ -19,7 +22,7 @@ func NewLocalCodecStorage(dir string) (CodecStorage, error) {
 
 	schemas, err := lcf.readAllAvroSchemas(dir)
 	if err != nil {
-		return nil, WrapError(err, "reading all avro schemas")
+		return nil, errors.WrapError(err, "reading all avro schemas")
 	}
 
 	codecs := make(map[string]*CodecWrapper)
@@ -27,21 +30,21 @@ func NewLocalCodecStorage(dir string) (CodecStorage, error) {
 	for _, content := range schemas {
 		var schema map[string]interface{}
 		if err := json.NewDecoder(bytes.NewBuffer(content)).Decode(&schema); err != nil {
-			err = WrapError(err, "decoding from JSON into a map")
+			err = errors.WrapError(err, "decoding from JSON into a map")
 			return nil, err
 		}
 
 		name, ok := schema["name"].(string)
 		if !ok || name == "" {
-			return nil, NewError("schema name not found or empty")
+			return nil, errors.NewError("schema name not found or empty")
 		}
 		namespace, ok := schema["namespace"].(string)
 		if !ok || namespace == "" {
-			return nil, NewError("schema namespace not found or empty")
+			return nil, errors.NewError("schema namespace not found or empty")
 		}
 		codec, err := goavro.NewCodec(string(content))
 		if err != nil {
-			return nil, WrapError(err, "creating new codec from avro schema")
+			return nil, errors.WrapError(err, "creating new codec from avro schema")
 		}
 		codecs[namespace] = &CodecWrapper{
 			Codec:     codec,
@@ -93,19 +96,19 @@ func (l *localCodecStorage) readAllAvroSchemas(dir string) ([][]byte, error) {
 		}
 		f, err := os.Open(path)
 		if err != nil {
-			return WrapError(err, "opening path %s", path)
+			return errors.WrapError(err, "opening path %s", path)
 		}
 
 		content, err := ioutil.ReadAll(f)
 		if err != nil {
-			return WrapError(err, "reading content of file")
+			return errors.WrapError(err, "reading content of file")
 		}
 
 		list = append(list, content)
 		return nil
 	})
 	if err != nil {
-		return nil, WrapError(err, "walking inside directory %s", dir)
+		return nil, errors.WrapError(err, "walking inside directory %s", dir)
 	}
 	return list, nil
 }
