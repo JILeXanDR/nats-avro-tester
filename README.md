@@ -60,9 +60,9 @@ services:
     ports:
       - 4222
 ```
-### Separately in host network
+### Separately using host network (not recommended)
 ```
-docker run -e PORT=9999 -e --net=host jilexandr/natsavrotester:1.1.2
+docker run -e PORT=9999 --net=host jilexandr/natsavrotester:1.1.2
 ```
 
 ## How to develop?
