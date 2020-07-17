@@ -40,7 +40,7 @@ docker-compose up
 
 ## Want to use in your own project?
 Just use [image](https://hub.docker.com/repository/docker/jilexandr/natsavrotester) from Docker Hub
-### Configuration example
+### Inside your docker-compose.yml
 ```yaml
 version: "3"
 services:
@@ -59,6 +59,10 @@ services:
     image: nats:2.1
     ports:
       - 4222
+```
+### Separately in host network
+```
+docker run -e PORT=9999 -e --net=host jilexandr/natsavrotester:1.1.2
 ```
 
 ## How to develop?
