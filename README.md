@@ -45,7 +45,7 @@ Just use [image](https://hub.docker.com/repository/docker/jilexandr/natsavrotest
 version: "3"
 services:
   app:
-    image: jilexandr/natsavrotester:1.1.2
+    image: jilexandr/natsavrotester:tag
     environment:
       PORT: 8080
       NATS_SERVER: "http://nats:4222"
@@ -62,7 +62,7 @@ services:
 ```
 ### Separately using host network (not recommended)
 ```
-docker run -e PORT=9999 --net=host jilexandr/natsavrotester:1.1.2
+docker run -e PORT=9999 --net=host jilexandr/natsavrotester:tag
 ```
 
 ## How to develop?

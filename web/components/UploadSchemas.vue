@@ -15,7 +15,7 @@
                 try {
                     const res = await this.$backend.uploadSchema(this.file);
                     this.clearFile();
-                    this.$emit('success', 'File was uploaded.');
+                    this.$emit('success', 'Schemas was synchronized.');
                 } catch (e) {
                     this.$emit('error', e.message);
                 }
