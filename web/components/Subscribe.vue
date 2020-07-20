@@ -9,6 +9,7 @@
 
 <template>
     <div>
+        <slot></slot>
         <v-simple-table dense>
             <template v-slot:default>
                 <thead>

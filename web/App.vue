@@ -11,12 +11,6 @@
                 schemas: [],
                 messages: [],
                 readMessagesCount: 0,
-                snackbar: {
-                    model: false,
-                    timeout: 5000,
-                    color: 'info',
-                    text: '',
-                },
             };
         },
         computed: {
@@ -39,29 +33,21 @@
                 try {
                     this.$backend.fetchSchemas().then(res => this.schemas = res);
                 } catch (e) {
-                    this.showError(e.message);
+                    this.$notify('error', e.message);
                 }
             },
-            showNotification(type, text) {
-                this.snackbar.model = true;
-                this.snackbar.color = type;
-                this.snackbar.text = text;
-            },
-            showError(text) {
-                this.showNotification('error', text);
-            },
-            showSuccess(text) {
-                this.showNotification('success', text);
-            },
             onSuccess(message) {
-                this.showSuccess(message);
+                this.$notify('success', message);
             },
             onError(message) {
-                this.showError(message);
+                this.$notify('error', message);
             },
             onUploadedSchemasSuccess(message) {
-                this.showNotification(message);
+                this.$notify('success', message);
                 this.loadSchemas();
+            },
+            clearMessages() {
+                this.messages = [];
             },
         },
         watch: {
@@ -110,7 +96,9 @@
                         <v-card flat>
                             <v-card-text>
                                 <v-alert dense outlined dismissible type="info">You'll see messages from all subjects. Even they are not encoded using Avro.</v-alert>
-                                <Subscribe :events="messages"></Subscribe>
+                                <Subscribe :events="messages">
+                                    <v-btn @click="clearMessages" color="info" class="mr-4">Clear</v-btn>
+                                </Subscribe>
                             </v-card-text>
                         </v-card>
                     </v-tab-item>
@@ -122,10 +110,10 @@
                         </v-card>
                     </v-tab-item>
                 </v-tabs-items>
-                <v-snackbar v-model="snackbar.model" :color="snackbar.color" :timeout="snackbar.timeout">
-                    {{ snackbar.text }}
+                <v-snackbar v-model="notifierPlugin.model" :color="notifierPlugin.color" :timeout="notifierPlugin.timeout">
+                    {{ notifierPlugin.text }}
                     <template v-slot:action="{ attrs }">
-                        <v-btn dark text v-bind="attrs" @click="snackbar.model = false">Close</v-btn>
+                        <v-btn dark text v-bind="attrs" @click="notifierPlugin.model = false">Close</v-btn>
                     </template>
                 </v-snackbar>
             </v-container>

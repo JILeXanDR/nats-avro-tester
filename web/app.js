@@ -3,8 +3,10 @@ import Vuetify from 'vuetify'
 import App from './App.vue';
 import 'vuetify/dist/vuetify.min.css'
 import Backend from "./backend";
+import {NotifierPlugin} from "./plugins";
 
 Vue.use(Vuetify)
+Vue.use(NotifierPlugin)
 
 const vuetify = new Vuetify({});
 
