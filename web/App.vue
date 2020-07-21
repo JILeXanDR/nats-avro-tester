@@ -14,6 +14,10 @@
             };
         },
         computed: {
+            lastMessages() {
+                return this.messages;
+                // return this.messages.reverse();
+            },
             messagesCount() {
                 return this.messages.length;
             },
@@ -96,7 +100,7 @@
                         <v-card flat>
                             <v-card-text>
                                 <v-alert dense outlined dismissible type="info">You'll see messages from all subjects. Even they are not encoded using Avro.</v-alert>
-                                <Subscribe :events="messages">
+                                <Subscribe :events="lastMessages">
                                     <v-btn @click="clearMessages" color="info" class="mr-4">Clear</v-btn>
                                 </Subscribe>
                             </v-card-text>

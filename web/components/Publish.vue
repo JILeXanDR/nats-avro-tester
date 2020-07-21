@@ -35,8 +35,11 @@
                 return this.isPayloadValid && this.form.subject.length > 0;
             },
             editorHeight() {
-                // 17,647058824 per row
-                return '300px';
+                // TODO: optimize
+                const json = JSON.stringify(this.form.payload, null, '  ');
+                let lines = json.split('\n').length;
+                lines = lines < 8 ? 8 : lines;
+                return `${lines * 19}px`;
             },
         },
         methods: {
@@ -56,9 +59,6 @@
                 } catch (e) {
                     this.$emit('error', e.message);
                 }
-            },
-            onError() {
-
             },
         },
         watch: {
@@ -84,7 +84,7 @@
             <v-autocomplete v-model="form.type" :items="schemas" item-text="namespace" item-value="name" dense filled label="Subject" no-data-text="No schemas found"></v-autocomplete>
             <v-row>
                 <v-col>
-                    <v-jsoneditor ref="editor" v-model="form.payload" :options="options" :height="editorHeight" :plus="false" @error="onError"></v-jsoneditor>
+                    <v-jsoneditor ref="editor" v-model="form.payload" :options="options" :height="editorHeight" :plus="false"></v-jsoneditor>
                 </v-col>
             </v-row>
             <v-btn type=submit :disabled="!formValid" color="success" class="mr-4">Publish message</v-btn>

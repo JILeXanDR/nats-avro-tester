@@ -5,10 +5,12 @@ import App from './App.vue';
 import 'vuetify/dist/vuetify.min.css';
 import Backend from "./backend";
 import {NotifierPlugin} from "./plugins";
+import VueMoment from 'vue-moment';
 
 Vue.use(Vuetify);
 Vue.use(NotifierPlugin);
 Vue.use(VJsoneditor);
+Vue.use(VueMoment);
 
 const vuetify = new Vuetify({});
 

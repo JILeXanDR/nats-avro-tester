@@ -1,18 +1,18 @@
 <script>
     export default {
-        props: ['events'],
-        data() {
-            return {
-                preview: null,
-            };
-        },
-        methods: {
-            showPreview(item) {
-                this.preview = item;
+        props: {
+            events: {
+                required: true,
+                type: Array,
             },
-            mouseout(item) {
-                this.preview = null;
-            }
+        },
+        data() {
+            return {};
+        },
+        filters: {
+            pretty(str) {
+                return JSON.stringify(str, null, '  ');
+            },
         },
     }
 </script>
@@ -24,22 +24,30 @@
             <template v-slot:default>
                 <thead>
                 <tr>
+                    <th class="text-left">#</th>
                     <th class="text-left">Subject</th>
                     <th class="text-left">Payload</th>
                     <th class="text-left">When</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="item in events" :key="item.name">
-                    <td class="text-left">{{ item.subject }}</td>
+                <tr v-for="(item, index) in events" :key="item.name">
                     <td class="text-left">
-                        <pre v-if="preview === item">{{ preview.payload }}</pre>
-                        <span v-else>{{ item.payload }}</span>
+                        {{ index + 1 }}
                     </td>
-                    <td class="text-left">{{ item.when }}</td>
-                    <td>
-                        <v-btn v-if="preview !== item" color="success" @click="showPreview(item)">Preview</v-btn>
-                        <v-btn v-else color="success" @click="preview = null">Close</v-btn>
+                    <td class="text-left">
+                        <code>{{ item.subject }}</code>
+                    </td>
+                    <td class="text-left">
+                        <v-tooltip left>
+                            <template v-slot:activator="{ on, attrs }">
+                                <span class="text-caption" v-bind="attrs" v-on="on">{{ item.payload }}</span>
+                            </template>
+                            <pre>{{ item.payload | pretty }}</pre>
+                        </v-tooltip>
+                    </td>
+                    <td class="text-left">
+                        {{ item.when | moment("from") }}
                     </td>
                 </tr>
                 </tbody>
