@@ -1,12 +1,14 @@
 import Vue from 'vue';
-import Vuetify from 'vuetify'
+import Vuetify from 'vuetify';
+import VJsoneditor from 'v-jsoneditor/src/index';
 import App from './App.vue';
-import 'vuetify/dist/vuetify.min.css'
+import 'vuetify/dist/vuetify.min.css';
 import Backend from "./backend";
 import {NotifierPlugin} from "./plugins";
 
-Vue.use(Vuetify)
-Vue.use(NotifierPlugin)
+Vue.use(Vuetify);
+Vue.use(NotifierPlugin);
+Vue.use(VJsoneditor);
 
 const vuetify = new Vuetify({});
 

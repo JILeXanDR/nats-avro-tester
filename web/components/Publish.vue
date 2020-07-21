@@ -1,12 +1,25 @@
 <script>
+    import VJsoneditor from 'v-jsoneditor/src/index'
+
     export default {
+        components: {
+            VJsoneditor,
+        },
         props: ['schemas'],
         data() {
             return {
+                isPayloadValid: false,
                 form: {
                     type: null,
                     payload: '',
                     subject: '',
+                },
+                options: {
+                    mode: 'code',
+                    mainMenuBar: false,
+                    onValidationError: (errs) => {
+                        this.isPayloadValid = errs.length === 0;
+                    },
                 },
             };
         },
@@ -16,25 +29,21 @@
                 if (this.form.type) {
                     example = this.schemas.find(v => v.name === this.form.type).example;
                 }
-                return JSON.stringify(example, null, 2);
-            },
-            isPayloadValid() {
-                try {
-                    JSON.parse(this.form.payload);
-                    return true;
-                } catch (e) {
-                    return false;
-                }
+                return example;
             },
             formValid() {
                 return this.isPayloadValid && this.form.subject.length > 0;
+            },
+            editorHeight() {
+                // 17,647058824 per row
+                return '300px';
             },
         },
         methods: {
             async processForm() {
                 let payload;
                 try {
-                    payload = JSON.parse(this.form.payload);
+                    payload = this.form.payload;
                 } catch (e) {
                     return;
                 }
@@ -47,6 +56,9 @@
                 } catch (e) {
                     this.$emit('error', e.message);
                 }
+            },
+            onError() {
+
             },
         },
         watch: {
@@ -70,7 +82,11 @@
     <div>
         <v-form @submit.prevent="processForm">
             <v-autocomplete v-model="form.type" :items="schemas" item-text="namespace" item-value="name" dense filled label="Subject" no-data-text="No schemas found"></v-autocomplete>
-            <v-textarea outlined label="Payload" :value="form.payload" v-model="form.payload" :auto-grow="true"></v-textarea>
+            <v-row>
+                <v-col>
+                    <v-jsoneditor ref="editor" v-model="form.payload" :options="options" :height="editorHeight" :plus="false" @error="onError"></v-jsoneditor>
+                </v-col>
+            </v-row>
             <v-btn type=submit :disabled="!formValid" color="success" class="mr-4">Publish message</v-btn>
         </v-form>
     </div>
