@@ -98,6 +98,7 @@ func main() {
 	e.POST("/api/schemas", handlers.UploadSchema)
 	e.POST("/api/message", handlers.CreateMessage)
 	e.GET("/api/stream", handlers.MessagesStream)
+	e.GET("/api/check_version", handlers.CheckVersion)
 
 	lgr.Info().Msgf("starting server at http://localhost:%d", cfg.Port)
 

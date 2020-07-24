@@ -4,10 +4,10 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"os"
 
 	"nats-viewer/pkg/avro"
 	"nats-viewer/pkg/errors"
@@ -15,6 +15,8 @@ import (
 	"nats-viewer/pkg/nats"
 	"nats-viewer/pkg/sse"
 
+	"github.com/coreos/go-semver/semver"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -180,4 +182,36 @@ func (h *apiHandlers) MessagesStream(c echo.Context) error {
 			flusher.Flush()
 		}
 	})
+}
+
+// TODO: improve, refactor
+func (h *apiHandlers) CheckVersion(c echo.Context) (err error) {
+	current, err := getCurrentVersion()
+	if err != nil {
+		return err
+	}
+
+	last, err := getLastVersion()
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"envs":          os.Environ(),
+		"current":       current,
+		"last":          last,
+		"should_update": current.LessThan(*last),
+	})
+}
+
+func getCurrentVersion() (*semver.Version, error) {
+	version := os.Getenv("VERSION")
+	if version == "" {
+		return &semver.Version{}, nil
+	}
+	return semver.New(version), nil
+}
+
+func getLastVersion() (*semver.Version, error) {
+	return &semver.Version{}, nil
 }

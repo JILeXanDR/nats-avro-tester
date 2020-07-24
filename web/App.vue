@@ -2,11 +2,18 @@
     import Publish from './components/Publish';
     import Subscribe from './components/Subscribe';
     import UploadSchemas from './components/UploadSchemas';
+    import Version from './components/Version';
 
     export default {
-        components: {Publish, Subscribe, UploadSchemas},
+        components: {
+            Publish,
+            Subscribe,
+            UploadSchemas,
+            Version,
+        },
         data() {
             return {
+                version: null,
                 tab: null,
                 schemas: [],
                 messages: [],
@@ -16,7 +23,6 @@
         computed: {
             lastMessages() {
                 return this.messages;
-                // return this.messages.reverse();
             },
             messagesCount() {
                 return this.messages.length;
@@ -30,6 +36,9 @@
         },
         created() {
             this.loadSchemas();
+            this.$backend.checkVersion().then(res => {
+                this.version = res;
+            });
             this.$backend.connectMessagesStream(message => this.messages.push(message));
         },
         methods: {
@@ -73,7 +82,7 @@
 <template>
     <v-app>
         <v-app-bar app color="indigo" dark>
-            <v-toolbar-title>NATS AVRO TESTER</v-toolbar-title>
+            <v-toolbar-title>NATS AVRO TESTER <Version :data="version"></Version></v-toolbar-title>
         </v-app-bar>
         <v-main>
             <v-container fluid>

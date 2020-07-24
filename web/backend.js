@@ -60,4 +60,8 @@ export default class Backend {
             next(JSON.parse(event.data));
         });
     }
+
+    checkVersion() {
+        return apiRequest('GET', this.baseUrl + '/api/check_version');
+    }
 }
